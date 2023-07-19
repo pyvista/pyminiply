@@ -43,6 +43,17 @@ jobs:
       - name: Build sdist
         run: pipx run build --sdist
 
+      - name: Validate wheel
+        run: |
+          pip install twine
+          twine check dist/*
+
+      - name: Validate sdist
+        run: |
+          pip install dist/*
+          pip install pytest pyvista
+          pytest -x
+
       - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
