@@ -1,7 +1,9 @@
 """Python wrapper of the miniply library."""
 import os
+
 import numpy as np
 from pyminiply._wrapper import load_mesh_from_ply
+
 
 def _polydata_from_faces(points, faces):
     """Generate a polydata from a faces array containing no padding and all triangles.
@@ -54,7 +56,7 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
         The path to the PLY file.
     read_normals : bool, default: True
         If ``True``, the normals are read from the PLY file.
-    read_uv : bool, defualt: True
+    read_uv : bool, default: True
         If ``True``, the UV texture coordinates are read from the PLY file if
         available.
     read_color : bool, default: True
@@ -142,6 +144,7 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
     return load_mesh_from_ply(filename, read_normals, read_uv, read_color)
 
+
 def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
     """
     Read a binary STL file and return it as a PyVista mesh.
@@ -155,7 +158,7 @@ def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
         The path to the binary STL file.
     read_normals : bool, default: True
         If ``True``, the normals are read from the PLY file.
-    read_uv : bool, defualt: True
+    read_uv : bool, default: True
         If ``True``, the UV texture coordinates are read from the PLY file if
         available.
     read_color : bool, default: True

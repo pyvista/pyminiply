@@ -1,14 +1,15 @@
 """Test pyminiply."""
 import numpy as np
+import pyminiply
 import pytest
 import pyvista as pv
-import pyminiply
+
 
 @pytest.fixture
 def plyfile(tmpdir):
     filename = tmpdir.join("tmp.ply")
     mesh = pv.Plane().triangulate().subdivide(2)
-    mesh['RGB'] = np.vstack([np.linspace(0, 255, mesh.n_points, dtype=np.uint8)]*3).T
+    mesh['RGB'] = np.vstack([np.linspace(0, 255, mesh.n_points, dtype=np.uint8)] * 3).T
     mesh.save(filename, texture='RGB')
     return str(filename)
 
@@ -17,7 +18,7 @@ def plyfile(tmpdir):
 def plyfile_ascii(tmpdir):
     filename = tmpdir.join("tmp.ply")
     mesh = pv.Plane().triangulate()
-    mesh['RGB'] = np.vstack([np.linspace(0, 255, 121, dtype=np.uint8)]*3).T
+    mesh['RGB'] = np.vstack([np.linspace(0, 255, 121, dtype=np.uint8)] * 3).T
     mesh.save(filename, texture='RGB', binary=False)
     return str(filename)
 

@@ -58,7 +58,7 @@ repos:
   - id: clang-format
     files: |
       (?x)^(
-        pyminiply/[^_].*\.c.*
+        pyminiply/[^_].*\.cpp.*
       )$
 
 - repo: https://github.com/python-jsonschema/check-jsonschema
