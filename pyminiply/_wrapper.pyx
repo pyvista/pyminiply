@@ -76,7 +76,7 @@ def load_mesh_from_ply(filename, read_normals=True, read_uv=True, read_color=Tru
     elif out == -2:
         raise RuntimeError('Invalid PLY file.')
     elif out == -3:
-        raise OSError('Failed to allocate memory.')    
+        raise OSError('Failed to allocate memory.')
 
     # Create ArrayWrappers
     cdef:

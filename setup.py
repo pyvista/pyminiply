@@ -1,4 +1,4 @@
-"""Setup for stl-reader."""
+"""Setup for pyminiply."""
 from io import open as io_open
 import os
 import sys
@@ -17,7 +17,7 @@ elif os.name == "posix":  # linux org mac os
     if sys.platform == "linux":
         extra_compile_args = ["-std=gnu++11", "-O3", "-w"]
     else:  # probably mac os
-        extra_compile_args = ["-O3", "-w"]
+        extra_compile_args = ["-std=c++11", "-O3", "-w"]
 else:
     raise Exception(f"Unsupported OS {os.name}")
 
@@ -57,7 +57,7 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     python_requires=">=3.8",
-    url="https://github.com/pyvista/pymeshfix",
+    url="https://github.com/pyvista/pyminiply",
     # Build cython modules
     ext_modules=cythonize(
         [
@@ -76,7 +76,8 @@ setup(
         ]
     ),
     package_data={
-        "pyminiply": ["*.pyx"],  # include all .pyx files in the package
+        "pyminiply": ["*.pyx", "*.hpp"],
+        "pyminiply/wrapper": ["*.c", "*.h"],
     },
     keywords="read ply",
     install_requires=["numpy>1.11.0"],

@@ -1,0 +1,5 @@
+include pyminiply/wrapper.hpp
+include pyminiply/wrapper.pyx
+include pyminiply/miniply/miniply.cpp
+include pyminiply/miniply/miniply.h
+global-exclude pyminiply/_wrapper.cpp
