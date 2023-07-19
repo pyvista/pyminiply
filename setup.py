@@ -1,4 +1,4 @@
-"""Setup for stl-reader."""
+"""Setup for pyminiply."""
 from io import open as io_open
 import os
 import sys
@@ -76,7 +76,8 @@ setup(
         ]
     ),
     package_data={
-        "pyminiply": ["*.pyx"],  # include all .pyx files in the package
+        "pyminiply": ["*.pyx", "*.hpp"],
+        "pyminiply/wrapper": ["*.c", "*.h"],
     },
     keywords="read ply",
     install_requires=["numpy>1.11.0"],
