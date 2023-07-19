@@ -1,4 +1,5 @@
 """Setup for pyminiply."""
+import platform
 from io import open as io_open
 import os
 import sys
@@ -12,12 +13,15 @@ filepath = os.path.dirname(__file__)
 # Define macros for cython
 macros = []
 if os.name == "nt":  # windows
-    extra_compile_args = ["/O2", "/w", "/GS"]
+    if platform.compiler().startswith('MS'):  # MSVC
+        extra_compile_args = ["/O2", "/w", "/GS"]
+    else:  # assuming GCC/MinGW or similar
+        extra_compile_args = ["-std=c++11", "-O2", "-w"]
 elif os.name == "posix":  # linux org mac os
     if sys.platform == "linux":
         extra_compile_args = ["-std=gnu++11", "-O3", "-w"]
     else:  # probably mac os
-        extra_compile_args = ["-O3", "-w"]
+        extra_compile_args = ["-std=c++11", "-O3", "-w"]
 else:
     raise Exception(f"Unsupported OS {os.name}")
 
@@ -57,7 +61,7 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     python_requires=">=3.8",
-    url="https://github.com/pyvista/pymeshfix",
+    url="https://github.com/pyvista/pyminiply",
     # Build cython modules
     ext_modules=cythonize(
         [
