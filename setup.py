@@ -1,5 +1,4 @@
 """Setup for pyminiply."""
-import platform
 from io import open as io_open
 import os
 import sys
@@ -13,10 +12,7 @@ filepath = os.path.dirname(__file__)
 # Define macros for cython
 macros = []
 if os.name == "nt":  # windows
-    if platform.compiler().startswith('MS'):  # MSVC
-        extra_compile_args = ["/O2", "/w", "/GS"]
-    else:  # assuming GCC/MinGW or similar
-        extra_compile_args = ["-std=c++11", "-O2", "-w"]
+    extra_compile_args = ["/O2", "/w", "/GS"]
 elif os.name == "posix":  # linux org mac os
     if sys.platform == "linux":
         extra_compile_args = ["-std=gnu++11", "-O3", "-w"]
