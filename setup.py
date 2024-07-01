@@ -1,4 +1,5 @@
 """Setup for pyminiply."""
+
 from io import open as io_open
 import os
 import sys

@@ -1,4 +1,5 @@
 """Test pyminiply."""
+
 import numpy as np
 import pyminiply
 import pytest

@@ -1,4 +1,5 @@
 """Python wrapper of the miniply library."""
+
 import os
 
 import numpy as np
