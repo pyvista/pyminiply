@@ -4,9 +4,9 @@ on:
   pull_request:
   push:
     tags:
-      - "*"
+    - '*'
     branches:
-      - "main"
+    - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,44 +21,44 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-14, macos-13]
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.2
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.19.2
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pyminiply-wheels-${{ matrix.os }}
-          path: ./wheelhouse/*.whl
+    - uses: actions/upload-artifact@v4
+      with:
+        name: pyminiply-wheels-${{ matrix.os }}
+        path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
 
-      - name: Build sdist
-        run: pipx run build --sdist
+    - name: Build sdist
+      run: pipx run build --sdist
 
-      - name: Validate wheel
-        run: |
-          pip install twine
-          twine check dist/*
+    - name: Validate wheel
+      run: |
+        pip install twine
+        twine check dist/*
 
-      - name: Validate sdist
-        run: |
-          pip install dist/*
-          pip install pytest pyvista
-          pytest
+    - name: Validate sdist
+      run: |
+        pip install dist/*
+        pip install pytest pyvista
+        pytest
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pyminiply-sdist
-          path: dist/*.tar.gz
+    - uses: actions/upload-artifact@v4
+      with:
+        name: pyminiply-sdist
+        path: dist/*.tar.gz
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
