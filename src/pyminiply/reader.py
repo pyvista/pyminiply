@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 
-from pyminiply._wrapper import load_mesh_from_ply
+from pyminiply._wrapper import load_ply
 
 
 def _polydata_from_faces(points, faces):
@@ -144,7 +144,7 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
     """
     if not os.path.isfile(filename):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
-    return load_mesh_from_ply(filename, read_normals, read_uv, read_color)
+    return load_ply(filename, read_normals, read_uv, read_color)
 
 
 def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):

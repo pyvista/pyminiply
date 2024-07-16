@@ -1,84 +1,72 @@
 #include "miniply/miniply.h"
 #include <cstdio>
 
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/string.h>
+
+#include "array_support.h"
+
+namespace nb = nanobind;
+using namespace nb::literals;
+
 /**
  * This function reads a 3D mesh from a .ply file using the miniply library and
- * populates externally allocated arrays with vertex positions and triangle
- * indices.
- *
- * @param filename: A const char* pointing to the name of the .ply file to read.
- * @param pos_ptr: A pointer to a float pointer. The float pointer will be
- *                 allocated within the function and filled with the vertex
- *                 positions from the .ply file. Each vertex's x, y, and z
- *                 coordinates are stored consecutively. This memory should be
- *                 freed by the caller.
- * @param indices_ptr: A pointer to an int pointer. The int pointer will be
- *                     allocated within the function and filled with the
- *                     triangle indices from the .ply file. Each triangle's
- *                     three indices are stored consecutively. This memory
- * should be freed by the caller.
- * @param numVerts: A pointer to a uint32_t which will be filled with the total
- *                  number of vertices in the mesh.
- * @param numIndices: A pointer to a uint32_t which will be filled with the
- *                    total number of indices in the mesh.
- *
- * @return: Returns 0 on successful read and data extraction. Returns negative
- *          error codes on failure:
- *          -2 if the PLY file could not be read,
- *          -3 if memory allocation for vertex positions or indices failed,
- *          -1 if the .ply file does not contain vertex positions or indices
- *          data.
- *
- * Note: This function assumes that the .ply file contains data for 3D vertices
- * and triangle indices. It will not work correctly for .ply files with
- * different data layout.
+ * populates numpy arrays with vertex positions and triangle indices.
  */
-int load_trimesh_from_ply(const char *filename, float **pos_ptr,
-                          int **indices_ptr, uint32_t *numVerts,
-                          uint32_t *numIndices, float **normals_ptr,
-                          float **uv_ptr, uint8_t **color_ptr,
-                          int *read_normals, int *read_uv, int *read_color) {
-  miniply::PLYReader reader(filename);
+nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
+                  bool read_uv = true, bool read_color = true) {
+
+  miniply::PLYReader reader(filename.c_str());
   if (!reader.valid()) {
-    return -2;
+    throw std::runtime_error("Invalid or unrecognized PLY file format.");
   }
 
+  float *pos_ptr;
+  uint32_t numVerts;
   uint32_t indexes[3];
   bool gotVerts = false, gotFaces = false;
+
+  // required
+  NDArray<float, 2> pos;
+  NDArray<int, 2> indices;
+
+  // optionally loaded (but always return empty)
+  NDArray<float, 2> normals = MakeNDArray<float, 2>({0, 3});
+  NDArray<float, 2> uv = MakeNDArray<float, 2>({0, 2});
+  NDArray<uint8_t, 2> color = MakeNDArray<uint8_t, 2>({0, 3});
 
   while (reader.has_element() && (!gotVerts || !gotFaces)) {
     if (reader.element_is(miniply::kPLYVertexElement) &&
         reader.load_element() && reader.find_pos(indexes)) {
-      *numVerts = reader.num_rows();
-      *pos_ptr = (float *)malloc(3 * (*numVerts) * sizeof(float));
-      if (*pos_ptr == nullptr) {
-        return -3; // failed to allocate memory
-      }
-      reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
-                                *pos_ptr);
+      numVerts = reader.num_rows();
+      pos = MakeNDArray<float, 2>({(int)numVerts, 3});
 
-      if (*read_uv) {
-        *read_uv = reader.find_texcoord(indexes);
-        if (*read_uv) {
-          *uv_ptr = (float *)malloc(2 * (*numVerts) * sizeof(float));
+      reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
+                                pos.data());
+
+      if (read_uv) {
+        read_uv = reader.find_texcoord(indexes);
+        if (read_uv) {
+          uv = MakeNDArray<float, 2>({(int)numVerts, 2});
           reader.extract_properties(indexes, 2, miniply::PLYPropertyType::Float,
-                                    *uv_ptr);
+                                    uv.data());
         }
       }
-      if (*read_color) {
-        *read_color = reader.find_color(indexes);
-        if (*read_color) {
-          *color_ptr = (uint8_t *)malloc(3 * (*numVerts) * sizeof(uint8_t));
+      if (read_color) {
+        read_color = reader.find_color(indexes);
+        if (read_color) {
+          color = MakeNDArray<uint8_t, 2>({(int)numVerts, 3});
           reader.extract_properties(indexes, 3, miniply::PLYPropertyType::UChar,
-                                    *color_ptr);
+                                    color.data());
         }
       }
-      if (*read_normals) {
-        *read_normals = reader.find_normal(indexes);
-        if (*read_normals) {
-          *normals_ptr = (float *)malloc(3 * (*numVerts) * sizeof(float));
+      if (read_normals) {
+        read_normals = reader.find_normal(indexes);
+        if (read_normals) {
+          normals = MakeNDArray<float, 2>({(int)numVerts, 3});
           reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
-                                    *normals_ptr);
+                                    normals.data());
         }
       }
       gotVerts = true;
@@ -86,26 +74,17 @@ int load_trimesh_from_ply(const char *filename, float **pos_ptr,
                reader.load_element() && reader.find_indices(indexes)) {
       bool polys = reader.requires_triangulation(indexes[0]);
       if (polys && !gotVerts) {
-        fprintf(stderr, "Error: need vertex positions to triangulate faces.\n");
-        break;
+        throw std::runtime_error("Need vertex positions to triangulate faces.");
       }
+      uint32_t numTriangles = reader.num_triangles(indexes[0]);
+      indices = MakeNDArray<int, 2>({(int)numTriangles, 3});
+
       if (polys) {
-        *numIndices = reader.num_triangles(indexes[0]) * 3;
-        *indices_ptr = (int *)malloc((*numIndices) * sizeof(int));
-        if (*indices_ptr == nullptr) {
-          free(*pos_ptr); // free memory allocated for vertices
-          return -3;      // failed to allocate memory
-        }
-        reader.extract_triangles(indexes[0], *pos_ptr, *numVerts,
-                                 miniply::PLYPropertyType::Int, *indices_ptr);
+        reader.extract_triangles(indexes[0], pos_ptr, numVerts,
+                                 miniply::PLYPropertyType::Int, indices.data());
       } else {
-        *numIndices = reader.num_triangles(indexes[0]) * 3;
-        *indices_ptr = (int *)malloc((*numIndices) * sizeof(int));
-        if (*indices_ptr == nullptr) {
-          return -3; // failed to allocate memory
-        }
         reader.extract_list_property(indexes[0], miniply::PLYPropertyType::Int,
-                                     *indices_ptr);
+                                     indices.data());
       }
       gotFaces = true;
     }
@@ -115,15 +94,15 @@ int load_trimesh_from_ply(const char *filename, float **pos_ptr,
     reader.next_element();
   }
 
-  if (!gotVerts || !gotFaces) {
-    if (gotVerts) {
-      free(*pos_ptr);
-    }
-    if (gotFaces) {
-      free(*indices_ptr);
-    }
-    return -1;
+  if (!gotVerts) {
+    throw std::runtime_error("Failed to load vertices");
   }
 
-  return 0;
+  if (!gotFaces) {
+    throw std::runtime_error("Failed to load faces");
+  }
+
+  return nb::make_tuple(pos, indices, normals, uv, color);
 }
+
+NB_MODULE(_wrapper, m) { m.def("load_ply", &LoadPLY); }

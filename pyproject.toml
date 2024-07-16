@@ -63,4 +63,4 @@ extend-select = ["I"]
 # Setuptools-style build caching in a local directory
 build-dir = "build/{wheel_tag}"
 minimum-version = "0.4"
-sdist.exclude = [".github", "*.png", "tests", ".mypy_cache", ".pre-commit-config.yaml", "*_cache", "CONTRIBUTING.md", ".gitignore"]
+sdist.exclude = [".github", "*.png", "tests", ".mypy_cache", ".pre-commit-config.yaml", "*_cache", "CONTRIBUTING.md", ".gitignore", "src/miniply/extra/", "src/G*", "src/miniply/TODO.md", "src/miniply/NOTES.md", "src/miniply/README.md", "src/miniply/CMakeLists.txt", "src/miniply/.git", ".gitmodules"]

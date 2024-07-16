@@ -1,0 +1,3 @@
+[submodule "src/miniply"]
+	path = src/miniply
+	url = https://github.com/vilya/miniply
