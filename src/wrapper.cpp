@@ -41,9 +41,9 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
         reader.load_element() && reader.find_pos(indexes)) {
       numVerts = reader.num_rows();
       pos = MakeNDArray<float, 2>({(int)numVerts, 3});
-
+      pos_ptr = pos.data();
       reader.extract_properties(indexes, 3, miniply::PLYPropertyType::Float,
-                                pos.data());
+                                pos_ptr);
 
       if (read_uv) {
         read_uv = reader.find_texcoord(indexes);
