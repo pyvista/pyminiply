@@ -24,7 +24,7 @@ description = "Rapidly read in PLY files using a wrapper over miniply"
 name = "pyminiply"
 readme = "README.rst"
 requires-python = ">=3.8"
-version = "0.3.dev0"
+version = "0.2.0"
 
 [project.optional-dependencies]
 pyvista = ["pyvista"]
