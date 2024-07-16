@@ -1,8 +1,10 @@
 """Python wrapper of the miniply library."""
+
 import os
 
 import numpy as np
-from pyminiply._wrapper import load_mesh_from_ply
+
+from pyminiply._wrapper import load_ply
 
 
 def _polydata_from_faces(points, faces):
@@ -142,7 +144,7 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
     """
     if not os.path.isfile(filename):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
-    return load_mesh_from_ply(filename, read_normals, read_uv, read_color)
+    return load_ply(filename, read_normals, read_uv, read_color)
 
 
 def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
@@ -198,9 +200,9 @@ def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
     vertices, indices, normals, uv, color = read(filename, read_normals, read_uv, read_color)
     mesh = _polydata_from_faces(vertices, indices)
     if read_normals and normals.size:
-        mesh.point_data['Normals'] = normals
+        mesh.point_data["Normals"] = normals
     if read_uv and uv.size:
-        mesh.point_data['TCoords'] = uv
+        mesh.point_data["TCoords"] = uv
     if read_color and color.size:
-        mesh.point_data['RGB'] = color
+        mesh.point_data["RGB"] = color
     return mesh

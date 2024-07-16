@@ -12,7 +12,7 @@
 
 ``pyminiply`` is a Python library for rapidly reading PLY files. It is a
 Python wrapper around the fast C++ PLY reading library provided by
-`miniply <ehttps://github.com/vilya/miniply>`_. Thanks @vilya!
+`miniply <https://github.com/vilya/miniply>`_. Thanks @vilya!
 
 The main advantage of ``pyminiply`` over other PLY reading libraries is
 its performance. See the benchmarks below for more details.
@@ -26,6 +26,12 @@ The recommended way to install ``pyminiply`` is via PyPI:
 .. code:: sh
 
    pip install pyminiply
+
+Optionally with PyVista:
+
+.. code:: sh
+
+   pip install pyminipl[pyvista]
 
 You can also clone the repository and install it from source:
 
@@ -122,21 +128,22 @@ in comparison to competing C and C++ libraries at `ply_io_benchmark
 The benchmark here shows how ``pyminiply`` performs relative to other
 Python PLY file readers.
 
-Here are the timings from reading in a 1,000,000 point binary PLY file:
+Here are the timings from reading in a 1,000,000 point binary PLY file
+on an Intel i9-14900KF:
 
 +-------------+-----------------+
 | Library     | Time (seconds)  |
 +=============+=================+
-| pyminiply   | 0.046           |
+| pyminiply   | 0.027           |
 +-------------+-----------------+
-| open3d      | 0.149           |
+| open3d      | 0.102           |
 +-------------+-----------------+
-| PyVista     | 0.409           |
+| PyVista     | 0.214           |
 | (VTK)       |                 |
 +-------------+-----------------+
-| meshio      | 0.512           |
+| meshio      | 0.249           |
 +-------------+-----------------+
-| plyfile     | 8.939           |
+| plyfile     | 4.039           |
 +-------------+-----------------+
 
 **Benchmark source:**
@@ -144,6 +151,7 @@ Here are the timings from reading in a 1,000,000 point binary PLY file:
 .. code:: python
 
    import time
+   from timeit import timeit
 
    import numpy as np
    import pyvista as pv
@@ -152,34 +160,29 @@ Here are the timings from reading in a 1,000,000 point binary PLY file:
    import meshio
    import open3d
 
-   filename = 'tmp.ply'
+   number = 10
+
+   filename = "tmp.ply"
    mesh = pv.Plane(i_resolution=999, j_resolution=999).triangulate()
    mesh.clear_data()
    mesh.save(filename)
 
-   # pyminiply
-   tstart = time.time()
-   pyminiply.read(filename)
-   tend = time.time() - tstart; print(f'pyminiply:   {tend:.3f}')
+   telap = timeit(lambda: pyminiply.read(filename), number=number)
+   print(f"pyminiply:   {telap/number:.3f}")
 
-   # open3d
-   tstart = time.time()
-   open3d.io.read_point_cloud(filename)
-   tend = time.time() - tstart; print(f'open3d:      {tend:.3f}')
+   telap = timeit(lambda: open3d.io.read_point_cloud(filename), number=number)
+   print(f"open3d:      {telap/number:.3f}")
 
-   # VTK/PyVista
-   tstart = time.time()
-   pv.read(filename)
-   tend = time.time() - tstart; print(f'VTK/PyVista: {tend:.3f}')
+   telap = timeit(lambda: pv.read(filename), number=number)
+   print(f"VTK/PyVista: {telap/number:.3f}")
 
-   tstart = time.time()
-   meshio.read(filename)
-   tend = time.time() - tstart; print(f'meshio:      {tend:.3f}')
+   telap = timeit(lambda: meshio.read(filename), number=number)
+   print(f"meshio:      {telap/number:.3f}")
 
    # plyfile
-   tstart = time.time()
-   plyfile.PlyData.read(filename)
-   tend = time.time() - tstart; print(f'plyfile:     {tend:.3f}')
+   number = 3  # less because it takes a while
+   telap = timeit(lambda: plyfile.PlyData.read(filename), number=number)
+   print(f"plyfile:     {telap/number:.3f}")
 
 Comparison with VTK and PyVista
 ===============================
