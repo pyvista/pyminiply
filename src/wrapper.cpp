@@ -1,6 +1,5 @@
 #include "miniply/miniply.h"
 #include <cstdio>
-#include <tuple>
 
 /**
  * This function reads a 3D mesh from a .ply file using the miniply library and

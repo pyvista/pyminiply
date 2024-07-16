@@ -12,7 +12,7 @@
 
 ``pyminiply`` is a Python library for rapidly reading PLY files. It is a
 Python wrapper around the fast C++ PLY reading library provided by
-`miniply <ehttps://github.com/vilya/miniply>`_. Thanks @vilya!
+`miniply <https://github.com/vilya/miniply>`_. Thanks @vilya!
 
 The main advantage of ``pyminiply`` over other PLY reading libraries is
 its performance. See the benchmarks below for more details.
@@ -26,6 +26,12 @@ The recommended way to install ``pyminiply`` is via PyPI:
 .. code:: sh
 
    pip install pyminiply
+
+Optionally with PyVista:
+
+.. code:: sh
+
+   pip install pyminipl[pyvista]
 
 You can also clone the repository and install it from source:
 
