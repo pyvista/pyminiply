@@ -42,7 +42,10 @@ jobs:
         submodules: true
 
     - name: Build sdist
-      run: pipx run build --sdist
+      run: |
+        sudo apt-get update
+        sudo apt-get install ninja-build -y
+        pipx run build --sdist
 
     - name: Validate wheel
       run: |
