@@ -31,7 +31,7 @@ pyvista = ["pyvista"]
 
 [tool.cibuildwheel]
 archs = ["auto64"]  # 64-bit only
-skip = "cp36-* cp37-* pp* *musllinux*"  # disable PyPy and musl-based wheels
+skip = "cp38-* pp* *musllinux* cp314-*"  # disable PyPy and musl-based wheels
 test-command = "pytest {project}/tests"
 test-requires = "pytest pyvista"
 

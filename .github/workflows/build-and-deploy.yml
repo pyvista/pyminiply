@@ -26,7 +26,7 @@ jobs:
         submodules: true
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.22.0
 
     - uses: actions/upload-artifact@v4
       with:
@@ -76,7 +76,7 @@ jobs:
     - name: List artifacts
       run: ls -R
 
-    - uses: pypa/gh-action-pypi-publish@v1.9.0
+    - uses: pypa/gh-action-pypi-publish@v1.12.2
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
