@@ -23,8 +23,8 @@ dependencies = [
 description = "Rapidly read in PLY files using a wrapper over miniply"
 name = "pyminiply"
 readme = "README.rst"
-requires-python = ">=3.8"
-version = "0.2.1"
+requires-python = ">=3.9"
+version = "0.2.2"
 
 [project.optional-dependencies]
 pyvista = ["pyvista"]
@@ -44,6 +44,10 @@ MACOSX_DEPLOYMENT_TARGET = "10.14"  # Needed for full C++17 support on MacOS
 [tool.codespell]
 quiet-level = 3
 skip = '*.cxx,*.h,*.gif,*.png,*.jpg,*.js,*.html,*.doctree,*.ttf,*.woff,*.woff2,*.eot,*.mp4,*.inv,*.pickle,*.ipynb,flycheck*,./.git/*,./.hypothesis/*,*.yml,./doc/build/*,./doc/images/*,./dist/*,*~,.hypothesis*,*.cpp,*.c'
+
+[tool.mypy]
+plugins = ["numpy.typing.mypy_plugin"]
+strict = true
 
 [tool.pytest.ini_options]
 filterwarnings = [

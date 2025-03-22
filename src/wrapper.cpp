@@ -94,13 +94,13 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
     reader.next_element();
   }
 
-  if (!gotVerts) {
-    throw std::runtime_error("Failed to load vertices");
-  }
+  // if (!gotVerts) {
+  //   throw std::runtime_error("Failed to load vertices");
+  // }
 
-  if (!gotFaces) {
-    throw std::runtime_error("Failed to load faces");
-  }
+  // if (!gotFaces) {
+  //   throw std::runtime_error("Failed to load faces");
+  // }
 
   return nb::make_tuple(pos, indices, normals, uv, color);
 }
