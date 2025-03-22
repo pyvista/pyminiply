@@ -1,13 +1,19 @@
 """Python wrapper of the miniply library."""
 
 import os
+from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
+from numpy.typing import NDArray
 
 from pyminiply._wrapper import load_ply
 
+if TYPE_CHECKING:
+    from pyvista.core.pointset import PointSet, PolyData
 
-def _polydata_from_faces(points, faces):
+
+def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) -> "PolyData":
     """Generate a polydata from a faces array containing no padding and all triangles.
 
     This is a more efficient way of instantiating PolyData from point and face
@@ -22,7 +28,7 @@ def _polydata_from_faces(points, faces):
 
     """
     try:
-        import pyvista as pv
+        from pyvista.core.pointset import PolyData
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             "To use this functionality, install PyVista with\n\npip install pyvista"
@@ -30,16 +36,17 @@ def _polydata_from_faces(points, faces):
 
     from pyvista import ID_TYPE
 
+    # backwards compatibility
     try:
         from pyvista.core.utilities import numpy_to_idarr
     except ModuleNotFoundError:  # pragma: no cover
-        from pyvista.utilities.cells import numpy_to_idarr
+        from pyvista.utilities.cells import numpy_to_idarr  # try: ignore
     from vtkmodules.vtkCommonDataModel import vtkCellArray
 
     if faces.ndim != 2:
         raise ValueError("Expected a two dimensional face array.")
 
-    pdata = pv.PolyData()
+    pdata = PolyData()
     pdata.points = points
 
     carr = vtkCellArray()
@@ -49,12 +56,23 @@ def _polydata_from_faces(points, faces):
     return pdata
 
 
-def read(filename, read_normals=True, read_uv=True, read_color=True):
+def read(
+    filename: Union[str, Path],
+    read_normals: bool = True,
+    read_uv: bool = True,
+    read_color: bool = True,
+) -> tuple[
+    NDArray[np.float32],
+    NDArray[np.int32],
+    NDArray[np.float32],
+    NDArray[np.float32],
+    NDArray[np.uint8],
+]:
     """Read a PLY file and extract vertices, indices, normals, UV, and color information.
 
     Parameters
     ----------
-    filename : str
+    filename : str | Path
         The path to the PLY file.
     read_normals : bool, default: True
         If ``True``, the normals are read from the PLY file.
@@ -73,7 +91,7 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
     indices : numpy.ndarray[int32]
         An array of triangle indices from the PLY file. Each row represents a
         triangle, and the columns represent the indices of the vertices that
-        make up the triangle.
+        make up the triangle. This array may be empty if there are no vertices.
     normals : numpy.ndarray[float32]
         An array of vertex normals from the PLY file, if `read_normals` is
         True.  Each row represents a normal, and the columns represent the X,
@@ -142,14 +160,20 @@ def read(filename, read_normals=True, read_uv=True, read_color=True):
            [255, 255, 255]], dtype=uint8)
 
     """
+    filename = str(filename)
     if not os.path.isfile(filename):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
     return load_ply(filename, read_normals, read_uv, read_color)
 
 
-def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
+def read_as_mesh(
+    filename: Union[str, Path],
+    read_normals: bool = True,
+    read_uv: bool = True,
+    read_color: bool = True,
+) -> Union["PointSet", "PolyData"]:
     """
-    Read a binary STL file and return it as a PyVista mesh.
+    Read a binary STL file and return it as a PyVista PolyData or PointSet.
 
     This function uses the `get_stl_data` function, which is a wrapper
     of https://github.com/aki5/libstl, to read STL files.
@@ -168,8 +192,8 @@ def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
 
     Returns
     -------
-    mesh : pyvista.PolyData
-        The mesh from the STL file, represented as a PyVista PolyData object.
+    pyvista.PolyData | PointSet
+        The mesh from the PLY file, represented as a PyVista PolyData or PointSet.
 
     Raises
     ------
@@ -198,7 +222,17 @@ def read_as_mesh(filename, read_normals=True, read_uv=True, read_color=True):
 
     """
     vertices, indices, normals, uv, color = read(filename, read_normals, read_uv, read_color)
-    mesh = _polydata_from_faces(vertices, indices)
+    if vertices is None:
+        raise RuntimeError("PLY file is missing vertices")
+
+    if indices is None or not indices.size:
+        # handle point clouds
+        from pyvista.core import PointSet
+
+        mesh = PointSet(vertices)
+    else:
+        mesh = _polydata_from_faces(vertices, indices)
+
     if read_normals and normals.size:
         mesh.point_data["Normals"] = normals
     if read_uv and uv.size:
