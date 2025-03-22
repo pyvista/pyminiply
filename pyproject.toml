@@ -23,7 +23,7 @@ dependencies = [
 description = "Rapidly read in PLY files using a wrapper over miniply"
 name = "pyminiply"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 version = "0.3.dev0"
 
 [project.optional-dependencies]
@@ -58,6 +58,10 @@ line-length = 100
 
 [tool.ruff.lint]
 extend-select = ["I"]
+
+[tool.mypy]
+plugins = ["numpy.typing.mypy_plugin"]
+strict = true
 
 [tool.scikit-build]
 # Setuptools-style build caching in a local directory

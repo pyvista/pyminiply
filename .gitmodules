@@ -1,3 +1,4 @@
 [submodule "src/miniply"]
 	path = src/miniply
-	url = https://github.com/vilya/miniply
+	url = https://github.com/akaszynski/miniply
+	branch = patch-1

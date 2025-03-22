@@ -11,11 +11,23 @@ If using emacs and helm, generate the project configuration files using `-DCMAKE
 ```
 pip install nanobind
 export NANOBIND_INCLUDE=$(python -c "import nanobind, os; print(os.path.join(os.path.dirname(nanobind.__file__), 'cmake'))")
-cmake -Dnanobind_DIR=$NANOBIND_INCLUDE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES="/usr/include/c++/11;/usr/include/x86_64-linux-gnu/c++/11/;/usr/lib/gcc/x86_64-linux-gnu/11/include/"
+cmake -Dnanobind_DIR=$NANOBIND_INCLUDE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES="/usr/include/c++/13;/usr/include/x86_64-linux-gnu/c++/13/;/usr/lib/gcc/x86_64-linux-gnu/13/include/"
 ```
 
 These will be necessary for helm and treesit to determine the locations of the header files.
 
+
+Note: C++ include directory might have to be modified depending on which version you have installed. Check with:
+
+```bash
+ls /usr/include/c++
+```
+
+Also, Make sure you have ``clangd`` installed:
+
+```bash
+sudo apt install clangd
+```
 
 #### Debug Build
 
@@ -55,3 +67,17 @@ These can be challenging to find. Use [valgrind](https://valgrind.org/) with the
 ```
  valgrind --leak-check=full --log-file=val.txt --suppressions=valgrind-python.supp pytest -k clus && grep 'new\[\]' val.txt
  ```
+
+#### Fast builds
+
+For faster builds, run without build isolation with:
+
+```
+pip install -e . --no-build-isolation 
+```
+
+Dependencies:
+```
+pip install nanobind
+sudo apt install ninja-build
+```
