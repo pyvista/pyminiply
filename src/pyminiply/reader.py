@@ -1,8 +1,8 @@
 """Python wrapper of the miniply library."""
 
-from typing import Union, TYPE_CHECKING
-from pathlib import Path
 import os
+from pathlib import Path
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 from numpy.typing import NDArray
@@ -10,10 +10,10 @@ from numpy.typing import NDArray
 from pyminiply._wrapper import load_ply
 
 if TYPE_CHECKING:
-    from pyvista.core import PolyData, PointSet
+    from pyvista.core.pointset import PointSet, PolyData
 
 
-def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]):
+def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) -> "PolyData":
     """Generate a polydata from a faces array containing no padding and all triangles.
 
     This is a more efficient way of instantiating PolyData from point and face
@@ -28,7 +28,7 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]):
 
     """
     try:
-        import pyvista as pv
+        from pyvista.core.pointset import PolyData
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             "To use this functionality, install PyVista with\n\npip install pyvista"
@@ -36,7 +36,7 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]):
 
     from pyvista import ID_TYPE
 
-    # backwards compatability
+    # backwards compatibility
     try:
         from pyvista.core.utilities import numpy_to_idarr
     except ModuleNotFoundError:  # pragma: no cover
@@ -46,12 +46,12 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]):
     if faces.ndim != 2:
         raise ValueError("Expected a two dimensional face array.")
 
-    pdata = pv.PolyData()
-    pdata.points = points  # type: ignore
+    pdata = PolyData()
+    pdata.points = points
 
     carr = vtkCellArray()
     offset = np.arange(0, faces.size + 1, faces.shape[1], dtype=ID_TYPE)
-    carr.SetData(numpy_to_idarr(offset, deep=True), numpy_to_idarr(faces, deep=True))  # type: ignore
+    carr.SetData(numpy_to_idarr(offset, deep=True), numpy_to_idarr(faces, deep=True))
     pdata.SetPolys(carr)
     return pdata
 

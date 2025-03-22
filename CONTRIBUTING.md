@@ -73,7 +73,7 @@ These can be challenging to find. Use [valgrind](https://valgrind.org/) with the
 For faster builds, run without build isolation with:
 
 ```
-pip install -e . --no-build-isolation 
+pip install -e . --no-build-isolation
 ```
 
 Dependencies:

@@ -6,7 +6,7 @@ import numpy as np
 import pyminiply
 import pytest
 import pyvista as pv
-from pyvista.core import PointSet
+from pyvista.core.pointset import PointSet
 
 
 @pytest.fixture

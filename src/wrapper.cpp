@@ -36,7 +36,7 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
   NDArray<float, 2> uv = MakeNDArray<float, 2>({0, 2});
   NDArray<uint8_t, 2> color = MakeNDArray<uint8_t, 2>({0, 3});
 
-  while (reader.has_element() && (!gotVerts || !gotFaces)) {      
+  while (reader.has_element() && (!gotVerts || !gotFaces)) {
     if (reader.element_is(miniply::kPLYVertexElement) &&
         reader.load_element() && reader.find_pos(indexes)) {
       numVerts = reader.num_rows();
