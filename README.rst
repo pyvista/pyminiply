@@ -122,7 +122,7 @@ You can also read in the PLY file as a `PyVista
 The main reason behind writing yet another PLY file reader for Python is
 to leverage the highly performant ``miniply`` library.
 
-There is already an benchmark demonstrating how ``miniply`` outperforms
+There is already a benchmark demonstrating how ``miniply`` outperforms
 in comparison to competing C and C++ libraries at `ply_io_benchmark
 <https://github.com/mhalber/ply_io_benchmark>`_ when reading PLY files.
 The benchmark here shows how ``pyminiply`` performs relative to other
