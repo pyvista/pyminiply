@@ -41,6 +41,10 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
     if faces.ndim != 2:
         raise ValueError("Expected a two dimensional face array.")
 
+    # while faces might be correctly sized, the required offset might exceed np.int32
+    if faces.size >= np.iinfo(np.int32).max:
+        faces = faces.astype(np.int64)
+
     if faces.dtype == np.int32:
         vtk_dtype = vtkTypeInt32Array().GetDataType()
     elif faces.dtype == np.int64:
