@@ -11,11 +11,11 @@ classifiers = [
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX",
   "Intended Audience :: Science/Research",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13"
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14"
 ]
 dependencies = [
   "numpy"
@@ -23,7 +23,7 @@ dependencies = [
 description = "Rapidly read in PLY files using a wrapper over miniply"
 name = "pyminiply"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 version = "0.3.dev0"
 
 [project.optional-dependencies]
@@ -31,7 +31,8 @@ pyvista = ["pyvista"]
 
 [tool.cibuildwheel]
 archs = ["auto64"]  # 64-bit only
-skip = "cp38-* pp* *musllinux* cp314-*"  # disable PyPy and musl-based wheels
+build = "cp310-* cp311-* cp312-* cp313-*"
+skip = "*musllinux* cp314t-*"  # disable PyPy and musl-based wheels
 test-command = "pytest {project}/tests"
 test-requires = "pytest pyvista"
 
