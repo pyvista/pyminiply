@@ -34,7 +34,7 @@ archs = ["auto64"]  # 64-bit only
 build = "cp310-* cp311-* cp312-* cp313-* cp314*"
 skip = "*musllinux* cp314t-*"  # disable PyPy and musl-based wheels
 test-command = "pytest {project}/tests"
-test-requires = "pytest pyvista"
+test-requires = "pytest"
 
 [tool.cibuildwheel.macos]
 archs = ["native"]
