@@ -2,6 +2,8 @@
 
 from importlib.metadata import entry_points
 from pathlib import Path
+from typing import Any
+from typing import Callable
 
 import numpy as np
 from packaging.version import Version
@@ -103,10 +105,11 @@ def test_entry_point_registered() -> None:
     not _HAS_READER_REGISTRY,
     reason="requires pyvista >= 0.48 entry-point hooks",
 )
-def test_read_as_mesh_raises_for_remote_uri() -> None:
+@pytest.mark.parametrize("func", [pyminiply.read, pyminiply.read_as_mesh])
+def test_read_raises_for_remote_uri(func: Callable[[str], Any]) -> None:
     """Remote URIs raise :class:`pyvista.LocalFileRequiredError` so PyVista downloads first."""
     with pytest.raises(pv.LocalFileRequiredError):
-        pyminiply.read_as_mesh("https://example.com/mesh.ply")
+        func("https://example.com/mesh.ply")
 
 
 @pytest.mark.skipif(

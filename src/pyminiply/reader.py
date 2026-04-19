@@ -182,6 +182,10 @@ def read(
 
     """
     filename = str(filename)
+    # When invoked via the ``pyvista.readers`` entry point with a remote
+    # URI, signal PyVista to download the file and retry locally.
+    if _has_scheme is not None and _has_scheme(filename):
+        raise _LocalFileRequiredError
     if not os.path.isfile(filename):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
     return load_ply(filename, read_normals, read_uv, read_color)
@@ -242,10 +246,6 @@ def read_as_mesh(
     Requires the ``pyvista`` library to be installed.
 
     """
-    # When invoked via the ``pyvista.readers`` entry point with a remote
-    # URI, signal PyVista to download the file and retry locally.
-    if _has_scheme is not None and _has_scheme(str(filename)):
-        raise _LocalFileRequiredError
     vertices, indices, normals, uv, color = read(filename, read_normals, read_uv, read_color)
     if vertices is None:
         raise RuntimeError("PLY file is missing vertices")
