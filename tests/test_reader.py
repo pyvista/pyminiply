@@ -1,12 +1,18 @@
 """Test pyminiply."""
 
+from importlib.metadata import entry_points
 from pathlib import Path
+from typing import Any
+from typing import Callable
 
 import numpy as np
+from packaging.version import Version
 import pyminiply
 import pytest
 import pyvista as pv
 from pyvista.core.pointset import PointSet
+
+_HAS_READER_REGISTRY = Version(pv.__version__) >= Version("0.48.dev0")
 
 
 @pytest.fixture
@@ -85,3 +91,34 @@ def test_read_as_mesh_point_cloud(plyfile_point_cloud: str) -> None:
 
     ply_mesh = pyminiply.read_as_mesh(plyfile_point_cloud, read_normals=False)
     assert "Normals" not in ply_mesh.point_data
+
+
+def test_entry_point_registered() -> None:
+    """``read_as_mesh`` is advertised on the ``pyvista.readers`` group."""
+    matches = [ep for ep in entry_points(group="pyvista.readers") if ep.name == ".ply"]
+    assert matches, "pyminiply did not publish a '.ply' entry point"
+    assert matches[0].value == "pyminiply:read_as_mesh"
+    assert matches[0].load() is pyminiply.read_as_mesh
+
+
+@pytest.mark.skipif(
+    not _HAS_READER_REGISTRY,
+    reason="requires pyvista >= 0.48 entry-point hooks",
+)
+@pytest.mark.parametrize("func", [pyminiply.read, pyminiply.read_as_mesh])
+def test_read_raises_for_remote_uri(func: Callable[[str], Any]) -> None:
+    """Remote URIs raise :class:`pyvista.LocalFileRequiredError` so PyVista downloads first."""
+    with pytest.raises(pv.LocalFileRequiredError):
+        func("https://example.com/mesh.ply")
+
+
+@pytest.mark.skipif(
+    not _HAS_READER_REGISTRY,
+    reason="requires pyvista >= 0.48 reader registry",
+)
+def test_pv_read_dispatches_to_entry_point(plyfile: str) -> None:
+    """``pv.read('*.ply')`` resolves to ``pyminiply.read_as_mesh`` via the registry."""
+    pv.read(plyfile)
+    from pyvista.core.utilities import reader_registry
+
+    assert reader_registry._custom_ext_readers.get(".ply") is pyminiply.read_as_mesh

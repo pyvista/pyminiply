@@ -12,6 +12,14 @@ from pyminiply._wrapper import load_ply
 if TYPE_CHECKING:
     from pyvista.core.pointset import PointSet, PolyData
 
+try:
+    # Available in pyvista >= 0.48: download remote files on read
+    from pyvista import LocalFileRequiredError as _LocalFileRequiredError
+    from pyvista import has_scheme as _has_scheme
+except ImportError:
+    _LocalFileRequiredError = None
+    _has_scheme = None
+
 
 def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) -> "PolyData":
     """Generate a polydata from a faces array containing no padding and all triangles.
@@ -174,6 +182,10 @@ def read(
 
     """
     filename = str(filename)
+    # When invoked via the ``pyvista.readers`` entry point with a remote
+    # URI, signal PyVista to download the file and retry locally.
+    if _has_scheme is not None and _has_scheme(filename):
+        raise _LocalFileRequiredError
     if not os.path.isfile(filename):
         raise FileNotFoundError(f'Invalid file or unable to locate "{filename}"')
     return load_ply(filename, read_normals, read_uv, read_color)
