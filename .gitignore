@@ -21,3 +21,6 @@ compile_commands.json
 
 *.ply
 uv.lock
+
+# setuptools_scm
+src/pyvista_miniply/_version.py
