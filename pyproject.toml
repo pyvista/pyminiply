@@ -21,14 +21,14 @@ dependencies = [
   "numpy"
 ]
 description = "Rapidly read in PLY files using a wrapper over miniply"
-name = "pyminiply"
+name = "pyvista-miniply"
 readme = "README.rst"
 requires-python = ">=3.10"
 version = "0.3.dev0"
 
 # Requires pyvista >= 0.48
 [project.entry-points."pyvista.readers"]
-".ply" = "pyminiply:read_as_mesh"
+".ply" = "pyvista_miniply:read_as_mesh"
 
 [project.optional-dependencies]
 pyvista = ["pyvista"]

@@ -1,44 +1,44 @@
-###########
- pyminiply
-###########
+#################
+ pyvista-miniply
+#################
 
 |pypi| |MIT|
 
-.. |pypi| image:: https://img.shields.io/pypi/v/pyminiply.svg?logo=python&logoColor=white
-   :target: https://pypi.org/project/pyminiply/
+.. |pypi| image:: https://img.shields.io/pypi/v/pyvista-miniply.svg?logo=python&logoColor=white
+   :target: https://pypi.org/project/pyvista-miniply/
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
    :target: https://opensource.org/licenses/MIT
 
-``pyminiply`` is a Python library for rapidly reading PLY files. It is a
-Python wrapper around the fast C++ PLY reading library provided by
-`miniply <https://github.com/vilya/miniply>`_. Thanks @vilya!
+``pyvista-miniply`` is a Python library for rapidly reading PLY files.
+It is a Python wrapper around the fast C++ PLY reading library provided
+by `miniply <https://github.com/vilya/miniply>`_. Thanks @vilya!
 
-The main advantage of ``pyminiply`` over other PLY reading libraries is
-its performance. See the benchmarks below for more details.
+The main advantage of ``pyvista-miniply`` over other PLY reading
+libraries is its performance. See the benchmarks below for more details.
 
 **************
  Installation
 **************
 
-The recommended way to install ``pyminiply`` is via PyPI:
+The recommended way to install ``pyvista-miniply`` is via PyPI:
 
 .. code:: sh
 
-   pip install pyminiply
+   pip install pyvista-miniply
 
 Optionally with PyVista:
 
 .. code:: sh
 
-   pip install pyminipl[pyvista]
+   pip install pyvista-miniply[pyvista]
 
 You can also clone the repository and install it from source:
 
 .. code:: sh
 
-   git clone https://github.com/pyvista/pyminiply.git
-   cd pyminiply
+   git clone https://github.com/pyvista/pyvista-miniply.git
+   cd pyvista-miniply
    git submodule update --init --recursive
    pip install .
 
@@ -51,8 +51,8 @@ PLY file:
 
 .. code:: pycon
 
-   >>> import pyminiply
-   >>> vertices, indices, normals, uv, color = pyminiply.read("example.ply")
+   >>> import pyvista_miniply
+   >>> vertices, indices, normals, uv, color = pyvista_miniply.read("example.ply")
    >>> vertices
    array([[ 5.0000000e-01, -5.0000000e-01, -5.5511151e-17],
           [ 4.0000001e-01, -5.0000000e-01, -4.4408922e-17],
@@ -99,8 +99,8 @@ You can also read in the PLY file as a `PyVista
 
 .. code:: pycon
 
-    >>> import pyminiply
-    >>> mesh = pyminiply.read_as_mesh("example.ply")
+    >>> import pyvista_miniply
+    >>> mesh = pyvista_miniply.read_as_mesh("example.ply")
     >>> mesh
     PolyData (0x7f0653579c00)
       N Cells:    200
@@ -113,17 +113,17 @@ You can also read in the PLY file as a `PyVista
 
    >>> mesh.plot()
 
-.. image:: https://github.com/pyvista/pyminiply/raw/main/demo.png
+.. image:: https://github.com/pyvista/pyvista-miniply/raw/main/demo.png
 
-When ``pyminiply`` is installed alongside ``pyvista >= 0.48``,
+When ``pyvista-miniply`` is installed alongside ``pyvista >= 0.48``,
 ``pyvista.read`` automatically dispatches ``.ply`` files through
-``pyminiply`` via the ``pyvista.readers`` entry point, no manual
+``pyvista-miniply`` via the ``pyvista.readers`` entry point, no manual
 registration is required:
 
 .. code:: pycon
 
    >>> import pyvista as pv
-   >>> mesh = pv.read("example.ply")  # now powered by pyminiply
+   >>> mesh = pv.read("example.ply")  # now powered by pyvista-miniply
 
 ***********
  Benchmark
@@ -135,26 +135,25 @@ to leverage the highly performant ``miniply`` library.
 There is already a benchmark demonstrating how ``miniply`` outperforms
 in comparison to competing C and C++ libraries at `ply_io_benchmark
 <https://github.com/mhalber/ply_io_benchmark>`_ when reading PLY files.
-The benchmark here shows how ``pyminiply`` performs relative to other
-Python PLY file readers.
+The benchmark here shows how ``pyvista-miniply`` performs relative to
+other Python PLY file readers.
 
 Here are the timings from reading in a 1,000,000 point binary PLY file
 on an Intel i9-14900KF:
 
-+-------------+-----------------+
-| Library     | Time (seconds)  |
-+=============+=================+
-| pyminiply   | 0.027           |
-+-------------+-----------------+
-| open3d      | 0.102           |
-+-------------+-----------------+
-| PyVista     | 0.214           |
-| (VTK)       |                 |
-+-------------+-----------------+
-| meshio      | 0.249           |
-+-------------+-----------------+
-| plyfile     | 4.039           |
-+-------------+-----------------+
++-------------------+-----------------+
+| Library           | Time (seconds)  |
++===================+=================+
+| pyvista-miniply   | 0.027           |
++-------------------+-----------------+
+| open3d            | 0.102           |
++-------------------+-----------------+
+| PyVista (VTK)     | 0.214           |
++-------------------+-----------------+
+| meshio            | 0.249           |
++-------------------+-----------------+
+| plyfile           | 4.039           |
++-------------------+-----------------+
 
 **Benchmark source:**
 
@@ -165,7 +164,7 @@ on an Intel i9-14900KF:
 
    import numpy as np
    import pyvista as pv
-   import pyminiply
+   import pyvista_miniply
    import plyfile
    import meshio
    import open3d
@@ -177,27 +176,28 @@ on an Intel i9-14900KF:
    mesh.clear_data()
    mesh.save(filename)
 
-   telap = timeit(lambda: pyminiply.read(filename), number=number)
-   print(f"pyminiply:   {telap/number:.3f}")
+   telap = timeit(lambda: pyvista_miniply.read(filename), number=number)
+   print(f"pyvista_miniply: {telap/number:.3f}")
 
    telap = timeit(lambda: open3d.io.read_point_cloud(filename), number=number)
-   print(f"open3d:      {telap/number:.3f}")
+   print(f"open3d:          {telap/number:.3f}")
 
    telap = timeit(lambda: pv.read(filename), number=number)
-   print(f"VTK/PyVista: {telap/number:.3f}")
+   print(f"VTK/PyVista:     {telap/number:.3f}")
 
    telap = timeit(lambda: meshio.read(filename), number=number)
-   print(f"meshio:      {telap/number:.3f}")
+   print(f"meshio:          {telap/number:.3f}")
 
    # plyfile
    number = 3  # less because it takes a while
    telap = timeit(lambda: plyfile.PlyData.read(filename), number=number)
-   print(f"plyfile:     {telap/number:.3f}")
+   print(f"plyfile:         {telap/number:.3f}")
 
 Comparison with VTK and PyVista
 ===============================
 
-Here's an additional benchmark comparing VTK/PyVista with ``pyminiply``:
+Here's an additional benchmark comparing VTK/PyVista with
+``pyvista-miniply``:
 
 .. code:: python
 
@@ -205,7 +205,7 @@ Here's an additional benchmark comparing VTK/PyVista with ``pyminiply``:
    import time
    import pyvista as pv
    import matplotlib.pyplot as plt
-   import pyminiply
+   import pyvista_miniply
 
    times = []
    filename = 'tmp.ply'
@@ -219,7 +219,7 @@ Here's an additional benchmark comparing VTK/PyVista with ``pyminiply``:
        vtk_time = time.time() - tstart
 
        tstart = time.time()
-       ply_mesh = pyminiply.read_as_mesh(filename)
+       ply_mesh = pyvista_miniply.read_as_mesh(filename)
        ply_reader_time =  time.time() - tstart
 
        assert np.allclose(pv_mesh['Normals'], ply_mesh['Normals'])
@@ -234,7 +234,7 @@ Here's an additional benchmark comparing VTK/PyVista with ``pyminiply``:
    plt.figure(1)
    plt.title('PLY load time')
    plt.plot(times[:, 0], times[:, 1], label='VTK')
-   plt.plot(times[:, 0], times[:, 2], label='pyminiply')
+   plt.plot(times[:, 0], times[:, 2], label='pyvista-miniply')
    plt.xlabel('Number of Points')
    plt.ylabel('Time to Load (seconds)')
    plt.legend()
@@ -242,15 +242,15 @@ Here's an additional benchmark comparing VTK/PyVista with ``pyminiply``:
    plt.figure(2)
    plt.title('PLY load time (Log-Log)')
    plt.loglog(times[:, 0], times[:, 1], label='VTK')
-   plt.loglog(times[:, 0], times[:, 2], label='pyminiply')
+   plt.loglog(times[:, 0], times[:, 2], label='pyvista-miniply')
    plt.xlabel('Number of Points')
    plt.ylabel('Time to Load (seconds)')
    plt.legend()
    plt.show()
 
-.. image:: https://github.com/pyvista/pyminiply/raw/main/bench0.png
+.. image:: https://github.com/pyvista/pyvista-miniply/raw/main/bench0.png
 
-.. image:: https://github.com/pyvista/pyminiply/raw/main/bench1.png
+.. image:: https://github.com/pyvista/pyvista-miniply/raw/main/bench1.png
 
 *****************************
  License and Acknowledgments
@@ -267,4 +267,4 @@ The work in this repository is also licensed under the MIT License.
 *********
 
 If you are having issues, please feel free to raise an `Issue
-<https://github.com/pyvista/pyminiply/issues>`_.
+<https://github.com/pyvista/pyvista-miniply/issues>`_.

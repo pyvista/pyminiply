@@ -50,4 +50,4 @@ endif()
 # target_compile_options(pfh PRIVATE -g -O0)
 
 # Install directive for scikit-build-core
-install(TARGETS _wrapper LIBRARY DESTINATION pyminiply)
+install(TARGETS _wrapper LIBRARY DESTINATION pyvista_miniply)
