@@ -1,11 +1,11 @@
-"""pyminiply module."""
+"""pyvista_miniply module."""
 
 from importlib.metadata import PackageNotFoundError, version
 
-from pyminiply.reader import read, read_as_mesh  # noqa: F401
+from pyvista_miniply.reader import read, read_as_mesh  # noqa: F401
 
 try:
-    __version__ = version("pyminiply")
+    __version__ = version("pyvista-miniply")
 except PackageNotFoundError:
     __version__ = "unknown"
 

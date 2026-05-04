@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 from numpy.typing import NDArray
 
-from pyminiply._wrapper import load_ply
+from pyvista_miniply._wrapper import load_ply
 
 if TYPE_CHECKING:
     from pyvista.core.pointset import PointSet, PolyData
@@ -137,8 +137,8 @@ def read(
 
     Example
     -------
-    >>> import pyminiply
-    >>> vertices, indices, normals, uv, color = pyminiply.read("example.ply")
+    >>> import pyvista_miniply
+    >>> vertices, indices, normals, uv, color = pyvista_miniply.read("example.ply")
     >>> vertices
     array([[ 5.0000000e-01, -5.0000000e-01, -5.5511151e-17],
            [ 4.0000001e-01, -5.0000000e-01, -4.4408922e-17],
@@ -229,8 +229,8 @@ def read_as_mesh(
 
     Example
     -------
-    >>> import pyminiply
-    >>> mesh = pyminiply.read_as_mesh("example.ply")
+    >>> import pyvista_miniply
+    >>> mesh = pyvista_miniply.read_as_mesh("example.ply")
     >>> mesh
     PolyData (0x7f0653579c00)
       N Cells:    200
