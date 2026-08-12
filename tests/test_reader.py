@@ -74,6 +74,8 @@ def test_read_as_mesh(plyfile: str) -> None:
     assert np.allclose(pv_mesh["RGB"], ply_mesh["RGB"])
     assert np.allclose(pv_mesh.points, ply_mesh.points)
     assert np.allclose(pv_mesh._connectivity_array, ply_mesh._connectivity_array)
+    if pv.vtk_version_info >= (9, 6, 2):
+        assert ply_mesh.GetPolys().IsStorageFixedSize()
 
     ply_mesh = pyvista_miniply.read_as_mesh(plyfile, read_normals=False)
     assert "Normals" not in ply_mesh.point_data

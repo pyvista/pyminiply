@@ -36,6 +36,7 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
 
     """
     try:
+        from pyvista import vtk_version_info
         from pyvista.core.pointset import PolyData
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
@@ -61,14 +62,17 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
         raise TypeError(f"Unsupported dtype ({type(faces)} for faces. Expected int32 or int64.")
 
     # convert to vtk arrays without copying
-    offset = np.arange(0, faces.size + 1, faces.shape[1], dtype=faces.dtype)
-    offset_vtk = numpy_to_vtk(offset, deep=False, array_type=vtk_dtype)
     faces_vtk = numpy_to_vtk(faces.ravel(), deep=False, array_type=vtk_dtype)
 
     # create the vtk arrays and keep references to avoid gc
     carr = vtkCellArray()
-    carr.SetData(offset_vtk, faces_vtk)
-    carr._offset_np_ref = offset_vtk
+    if vtk_version_info >= (9, 6, 2):
+        carr.SetData(faces.shape[1], faces_vtk)
+    else:
+        offset = np.arange(0, faces.size + 1, faces.shape[1], dtype=faces.dtype)
+        offset_vtk = numpy_to_vtk(offset, deep=False, array_type=vtk_dtype)
+        carr.SetData(offset_vtk, faces_vtk)
+        carr._offset_np_ref = offset_vtk
     carr._faces_np_ref = faces_vtk
 
     pdata = PolyData()
