@@ -37,15 +37,17 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
     """
     try:
         from pyvista import vtk_version_info
+        from pyvista._vtk import (
+            numpy_to_vtk,
+            vtkCellArray,
+            vtkTypeInt32Array,
+            vtkTypeInt64Array,
+        )
         from pyvista.core.pointset import PolyData
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             "To use this functionality, install PyVista with\n\npip install pyvista"
         )
-
-    from vtkmodules.util.numpy_support import numpy_to_vtk as numpy_to_vtk
-    from vtkmodules.vtkCommonCore import vtkTypeInt32Array, vtkTypeInt64Array
-    from vtkmodules.vtkCommonDataModel import vtkCellArray
 
     if faces.ndim != 2:
         raise ValueError("Expected a two dimensional face array.")
