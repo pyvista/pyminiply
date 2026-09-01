@@ -13,6 +13,7 @@ import pyvista as pv
 from pyvista.core.pointset import PointSet
 
 _HAS_READER_REGISTRY = Version(pv.__version__) >= Version("0.48.dev0")
+_HAS_READER_OVERRIDE = Version(pv.__version__) >= Version("0.49.dev0")
 
 
 @pytest.fixture
@@ -96,8 +97,8 @@ def test_read_as_mesh_point_cloud(plyfile_point_cloud: str) -> None:
 
 
 def test_entry_point_registered() -> None:
-    """``read_as_mesh`` is advertised on the ``pyvista.readers`` group."""
-    matches = [ep for ep in entry_points(group="pyvista.readers") if ep.name == ".ply"]
+    """``read_as_mesh`` is advertised on the ``pyvista.readers.override`` group."""
+    matches = [ep for ep in entry_points(group="pyvista.readers.override") if ep.name == ".ply"]
     assert matches, "pyvista_miniply did not publish a '.ply' entry point"
     assert matches[0].value == "pyvista_miniply:read_as_mesh"
     assert matches[0].load() is pyvista_miniply.read_as_mesh
@@ -114,9 +115,14 @@ def test_read_raises_for_remote_uri(func: Callable[[str], Any]) -> None:
         func("https://example.com/mesh.ply")
 
 
+def test_ply_is_not_claimed_in_the_plain_group() -> None:
+    """The plain group refuses an extension PyVista reads natively."""
+    assert not [ep for ep in entry_points(group="pyvista.readers") if ep.name == ".ply"]
+
+
 @pytest.mark.skipif(
-    not _HAS_READER_REGISTRY,
-    reason="requires pyvista >= 0.48 reader registry",
+    not _HAS_READER_OVERRIDE,
+    reason="requires pyvista >= 0.49 reader override group",
 )
 def test_pv_read_dispatches_to_entry_point(plyfile: str) -> None:
     """``pv.read('*.ply')`` resolves to ``pyvista_miniply.read_as_mesh`` via the registry."""

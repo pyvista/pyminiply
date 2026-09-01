@@ -115,15 +115,21 @@ You can also read in the PLY file as a `PyVista
 
 .. image:: https://github.com/pyvista/pyvista-miniply/raw/main/demo.png
 
-When ``pyvista-miniply`` is installed alongside ``pyvista >= 0.48``,
+When ``pyvista-miniply`` is installed alongside ``pyvista >= 0.49``,
 ``pyvista.read`` automatically dispatches ``.ply`` files through
-``pyvista-miniply`` via the ``pyvista.readers`` entry point, no manual
-registration is required:
+``pyvista-miniply`` via the ``pyvista.readers.override`` entry point, no
+manual registration is required:
 
 .. code:: pycon
 
    >>> import pyvista as pv
    >>> mesh = pv.read("example.ply")  # now powered by pyvista-miniply
+
+PyVista reads ``.ply`` natively, so this entry point replaces a built-in
+reader and is declared in the ``pyvista.readers.override`` group, which
+states that intent. On ``pyvista`` 0.48 the group is unknown and
+ignored: ``pyvista.read`` keeps using the built-in PLY reader, and
+``pyvista_miniply.read_as_mesh`` can still be called directly.
 
 ***********
  Benchmark
