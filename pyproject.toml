@@ -26,8 +26,10 @@ name = "pyvista-miniply"
 readme = "README.rst"
 requires-python = ">=3.10"
 
-# Requires pyvista >= 0.48
-[project.entry-points."pyvista.readers"]
+# ``.ply`` is a format PyVista reads natively, so replacing its reader is an
+# override and has to be declared as one. Requires pyvista >= 0.49; older
+# PyVista ignores this group and keeps using its built-in PLY reader.
+[project.entry-points."pyvista.readers.override"]
 ".ply" = "pyvista_miniply:read_as_mesh"
 
 [project.optional-dependencies]
