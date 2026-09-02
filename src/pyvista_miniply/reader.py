@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from pyvista_miniply._wrapper import load_ply
 
 if TYPE_CHECKING:
-    from pyvista.core.pointset import PointSet, PolyData
+    from pyvista.core.pointset import PolyData
 
 try:
     # Available in pyvista >= 0.48: download remote files on read
@@ -80,6 +80,43 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
     pdata = PolyData()
     pdata.points = points
     pdata.SetPolys(carr)
+    return pdata
+
+
+def _polydata_from_vertices(points: NDArray[np.float32]) -> "PolyData":
+    """Generate a polydata of vertex cells, one per point.
+
+    Matches what VTK's PLY reader returns for a point cloud, so a file that
+    round-trips through PyVista keeps its cells.
+
+    Parameters
+    ----------
+    points : np.ndarray
+        Points array.
+
+    """
+    try:
+        from pyvista._vtk import numpy_to_vtkIdTypeArray, vtkCellArray
+        from pyvista.core.pointset import PolyData
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(
+            "To use this functionality, install PyVista with\n\npip install pyvista"
+        )
+
+    n_points = points.shape[0]
+    connectivity = np.arange(n_points, dtype=np.int64)
+    offsets = np.arange(n_points + 1, dtype=np.int64)
+
+    carr = vtkCellArray()
+    connectivity_vtk = numpy_to_vtkIdTypeArray(connectivity, deep=False)
+    offsets_vtk = numpy_to_vtkIdTypeArray(offsets, deep=False)
+    carr.SetData(offsets_vtk, connectivity_vtk)
+    carr._connectivity_np_ref = connectivity
+    carr._offsets_np_ref = offsets
+
+    pdata = PolyData()
+    pdata.points = points
+    pdata.SetVerts(carr)
     return pdata
 
 
@@ -202,17 +239,18 @@ def read_as_mesh(
     read_normals: bool = True,
     read_uv: bool = True,
     read_color: bool = True,
-) -> Union["PointSet", "PolyData"]:
+) -> "PolyData":
     """
-    Read a binary STL file and return it as a PyVista PolyData or PointSet.
+    Read a PLY file and return it as a PyVista PolyData.
 
-    This function uses the `get_stl_data` function, which is a wrapper
-    of https://github.com/aki5/libstl, to read STL files.
+    Point clouds come back as vertex cells, matching what VTK's PLY reader
+    returns, along with the same active scalars, normals and texture
+    coordinates.
 
     Parameters
     ----------
     filename : str
-        The path to the binary STL file.
+        The path to the PLY file.
     read_normals : bool, default: True
         If ``True``, the normals are read from the PLY file.
     read_uv : bool, default: True
@@ -223,8 +261,8 @@ def read_as_mesh(
 
     Returns
     -------
-    pyvista.PolyData | PointSet
-        The mesh from the PLY file, represented as a PyVista PolyData or PointSet.
+    pyvista.PolyData
+        The mesh from the PLY file.
 
     Raises
     ------
@@ -257,17 +295,17 @@ def read_as_mesh(
         raise RuntimeError("PLY file is missing vertices")
 
     if indices is None or not indices.size:
-        # handle point clouds
-        from pyvista.core import PointSet
-
-        mesh = PointSet(vertices)
+        mesh = _polydata_from_vertices(vertices)
     else:
         mesh = _polydata_from_faces(vertices, indices)
 
     if read_normals and normals.size:
         mesh.point_data["Normals"] = normals
+        mesh.point_data.active_normals_name = "Normals"
     if read_uv and uv.size:
         mesh.point_data["TCoords"] = uv
+        mesh.point_data.active_texture_coordinates_name = "TCoords"
     if read_color and color.size:
         mesh.point_data["RGB"] = color
+        mesh.point_data.active_scalars_name = "RGB"
     return mesh

@@ -10,7 +10,6 @@ from packaging.version import Version
 import pyvista_miniply
 import pytest
 import pyvista as pv
-from pyvista.core.pointset import PointSet
 
 _HAS_READER_REGISTRY = Version(pv.__version__) >= Version("0.48.dev0")
 _HAS_READER_OVERRIDE = Version(pv.__version__) >= Version("0.49.dev0")
@@ -86,7 +85,9 @@ def test_read_as_mesh_point_cloud(plyfile_point_cloud: str) -> None:
     pv_mesh = pv.read(plyfile_point_cloud)
 
     ply_mesh = pyvista_miniply.read_as_mesh(Path(plyfile_point_cloud))
-    assert isinstance(ply_mesh, PointSet)
+    assert isinstance(ply_mesh, pv.PolyData)
+    assert ply_mesh.n_cells == ply_mesh.n_points
+    assert np.array_equal(pv_mesh.verts, ply_mesh.verts)
     assert np.allclose(pv_mesh["Normals"], ply_mesh["Normals"])
     assert np.allclose(pv_mesh["TCoords"], ply_mesh["TCoords"])
     assert np.allclose(pv_mesh["RGB"], ply_mesh["RGB"])
@@ -94,6 +95,25 @@ def test_read_as_mesh_point_cloud(plyfile_point_cloud: str) -> None:
 
     ply_mesh = pyvista_miniply.read_as_mesh(plyfile_point_cloud, read_normals=False)
     assert "Normals" not in ply_mesh.point_data
+
+
+@pytest.mark.parametrize("fixture", ["plyfile", "plyfile_point_cloud"])
+def test_matches_vtk_active_attributes(fixture: str, request: Any) -> None:
+    """Active scalars, normals and texture coordinates match VTK's PLY reader."""
+    filename = request.getfixturevalue(fixture)
+    reference = pv.PLYReader(filename).read()
+
+    mesh = pyvista_miniply.read_as_mesh(filename)
+
+    assert sorted(mesh.point_data) == sorted(reference.point_data)
+    assert mesh.point_data.active_scalars_name == reference.point_data.active_scalars_name
+    assert mesh.point_data.active_normals_name == reference.point_data.active_normals_name
+    assert (
+        mesh.point_data.active_texture_coordinates_name
+        == reference.point_data.active_texture_coordinates_name
+    )
+    for name in reference.point_data:
+        assert np.allclose(mesh[name], reference[name]), name
 
 
 def test_entry_point_registered() -> None:

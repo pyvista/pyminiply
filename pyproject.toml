@@ -37,7 +37,7 @@ pyvista = ["pyvista"]
 
 [tool.cibuildwheel]
 archs = ["auto64"]  # 64-bit only
-build = "cp310-* cp311-* cp312-* cp313-*"
+build = "cp310-* cp311-* cp312-*"  # cp312 is abi3 and covers every later 3.x
 skip = "*musllinux* cp314t-*"  # disable PyPy and musl-based wheels
 test-command = "pytest {project}/tests"
 test-requires = "pytest pyvista"
@@ -77,6 +77,7 @@ minimum-version = "0.10"
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
 sdist.exclude = [".github", "*.png", "tests", ".mypy_cache", ".pre-commit-config.yaml", "*_cache", "CONTRIBUTING.md", ".gitignore", "src/miniply/extra/", "src/G*", "src/miniply/TODO.md", "src/miniply/NOTES.md", "src/miniply/README.md", "src/miniply/CMakeLists.txt", "src/miniply/.git", ".gitmodules"]
 sdist.include = ["src/pyvista_miniply/_version.py"]
+wheel.py-api = "cp312"  # nanobind builds STABLE_ABI; one wheel serves 3.12 and later
 
 [tool.setuptools_scm]
 version_scheme = "release-branch-semver"
