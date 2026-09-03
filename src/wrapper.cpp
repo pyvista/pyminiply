@@ -54,10 +54,18 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
         }
       }
       if (read_color) {
-        read_color = reader.find_color(indexes);
+        // find_color only looks for r/g/b, so check for alpha first
+        uint32_t colorIdxs[4];
+        bool with_alpha =
+            reader.find_properties(colorIdxs, 4, "r", "g", "b", "a") ||
+            reader.find_properties(colorIdxs, 4, "red", "green", "blue",
+                                   "alpha");
+        read_color = with_alpha || reader.find_color(colorIdxs);
         if (read_color) {
-          color = MakeNDArray<uint8_t, 2>({(int)numVerts, 3});
-          reader.extract_properties(indexes, 3, miniply::PLYPropertyType::UChar,
+          const int ncomp = with_alpha ? 4 : 3;
+          color = MakeNDArray<uint8_t, 2>({(int)numVerts, ncomp});
+          reader.extract_properties(colorIdxs, ncomp,
+                                    miniply::PLYPropertyType::UChar,
                                     color.data());
         }
       }
