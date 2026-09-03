@@ -64,9 +64,8 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
         if (read_color) {
           const int ncomp = with_alpha ? 4 : 3;
           color = MakeNDArray<uint8_t, 2>({(int)numVerts, ncomp});
-          reader.extract_properties(colorIdxs, ncomp,
-                                    miniply::PLYPropertyType::UChar,
-                                    color.data());
+          reader.extract_properties(
+              colorIdxs, ncomp, miniply::PLYPropertyType::UChar, color.data());
         }
       }
       if (read_normals) {
