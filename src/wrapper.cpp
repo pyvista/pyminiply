@@ -84,8 +84,9 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
         throw std::runtime_error("Need vertex positions to triangulate faces.");
       }
       // num_triangles assumes a fan (count - 2 per face); the ear-clipping in
-      // extract_triangles emits fewer for degenerate polygons, so treat it as an
-      // upper bound, zero the buffer, and keep only the rows actually written.
+      // extract_triangles emits fewer for degenerate polygons, so treat it as
+      // an upper bound, zero the buffer, and keep only the rows actually
+      // written.
       uint32_t maxTriangles = reader.num_triangles(indexes[0]);
       int *tri = AllocateArray<int>((size_t)maxTriangles * 3, true);
 
