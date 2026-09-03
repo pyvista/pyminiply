@@ -309,4 +309,7 @@ def read_as_mesh(
         name = "RGB" if color.shape[1] == 3 else "RGBA"
         mesh.point_data[name] = color
         mesh.point_data.active_scalars_name = name
+    else:
+        # adding an array makes it active; VTK only ever activates colour
+        mesh.set_active_scalars(None)
     return mesh

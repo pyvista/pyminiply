@@ -188,3 +188,17 @@ def test_polygon_faces_never_exceed_the_point_count() -> None:
 
     mesh = pyvista_miniply.read_as_mesh(path)
     assert mesh.n_cells == indices.shape[0]
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        ({"read_color": False, "read_uv": False}, None),
+        ({"read_color": False}, None),
+        ({}, "RGB"),
+    ],
+)
+def test_active_scalars_match_vtk(plyfile: str, arrays: dict[str, Any], expected: Any) -> None:
+    """Only colour becomes the active scalars; adding normals or uv must not."""
+    ply_mesh = pyvista_miniply.read_as_mesh(plyfile, **arrays)
+    assert ply_mesh.point_data.active_scalars_name == expected
