@@ -68,7 +68,9 @@ def _polydata_from_faces(points: NDArray[np.float32], faces: NDArray[np.int32]) 
 
     # create the vtk arrays and keep references to avoid gc
     carr = vtkCellArray()
-    if vtk_version_info >= (9, 6, 2):
+    # 9.6.2 backs fixed-size offsets with a vtkImplicitArray that has no
+    # vtkArrayIterator, so the ascii writers segfault on it
+    if vtk_version_info >= (9, 7):
         carr.SetData(faces.shape[1], faces_vtk)
     else:
         offset = np.arange(0, faces.size + 1, faces.shape[1], dtype=faces.dtype)
@@ -309,4 +311,7 @@ def read_as_mesh(
         name = "RGB" if color.shape[1] == 3 else "RGBA"
         mesh.point_data[name] = color
         mesh.point_data.active_scalars_name = name
+    else:
+        # adding an array makes it active; VTK only ever activates colour
+        mesh.set_active_scalars(None)
     return mesh

@@ -74,7 +74,7 @@ def test_read_as_mesh(plyfile: str) -> None:
     assert np.allclose(pv_mesh["RGB"], ply_mesh["RGB"])
     assert np.allclose(pv_mesh.points, ply_mesh.points)
     assert np.allclose(pv_mesh._connectivity_array, ply_mesh._connectivity_array)
-    if pv.vtk_version_info >= (9, 6, 2):
+    if pv.vtk_version_info >= (9, 7):
         assert ply_mesh.GetPolys().IsStorageFixedSize()
 
     ply_mesh = pyvista_miniply.read_as_mesh(plyfile, read_normals=False)
@@ -188,3 +188,28 @@ def test_polygon_faces_never_exceed_the_point_count() -> None:
 
     mesh = pyvista_miniply.read_as_mesh(path)
     assert mesh.n_cells == indices.shape[0]
+
+
+@pytest.mark.parametrize(
+    ("arrays", "expected"),
+    [
+        ({"read_color": False, "read_uv": False}, None),
+        ({"read_color": False}, None),
+        ({}, "RGB"),
+    ],
+)
+def test_active_scalars_match_vtk(plyfile: str, arrays: dict[str, Any], expected: Any) -> None:
+    """Only colour becomes the active scalars; adding normals or uv must not."""
+    ply_mesh = pyvista_miniply.read_as_mesh(plyfile, **arrays)
+    assert ply_mesh.point_data.active_scalars_name == expected
+
+
+def test_ascii_multiblock_round_trip(plyfile: str) -> None:
+    """Ascii writers segfault on the implicit offsets array VTK 9.6.2 uses."""
+    import tempfile
+
+    mesh = pyvista_miniply.read_as_mesh(plyfile)
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "block.vtm"
+        pv.MultiBlock([mesh]).save(path, binary=False)
+        assert pv.read(path).n_blocks == 1
