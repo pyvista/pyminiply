@@ -306,6 +306,7 @@ def read_as_mesh(
         mesh.point_data["TCoords"] = uv
         mesh.point_data.active_texture_coordinates_name = "TCoords"
     if read_color and color.size:
-        mesh.point_data["RGB"] = color
-        mesh.point_data.active_scalars_name = "RGB"
+        name = "RGB" if color.shape[1] == 3 else "RGBA"
+        mesh.point_data[name] = color
+        mesh.point_data.active_scalars_name = name
     return mesh

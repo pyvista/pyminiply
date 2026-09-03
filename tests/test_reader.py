@@ -150,3 +150,41 @@ def test_pv_read_dispatches_to_entry_point(plyfile: str) -> None:
     from pyvista.core.utilities import reader_registry
 
     assert reader_registry._custom_ext_readers.get(".ply") is pyvista_miniply.read_as_mesh
+
+
+@pytest.mark.parametrize("ncomp", [3, 4])
+def test_read_as_mesh_rgba(tmp_path: Path, ncomp: int) -> None:
+    filename = tmp_path / "rgba.ply"
+    mesh = pv.Sphere()
+    texture = np.ones((mesh.n_points, ncomp), np.uint8)
+    texture[:, 2] = np.arange(mesh.n_points)[::-1]
+    if ncomp == 4:
+        texture[:, 3] = np.arange(mesh.n_points) % 256
+    mesh.save(filename, texture=texture)
+
+    name = "RGB" if ncomp == 3 else "RGBA"
+    pv_mesh = pv.PLYReader(filename).read()
+    ply_mesh = pyvista_miniply.read_as_mesh(filename)
+
+    assert np.array_equal(ply_mesh[name], pv_mesh[name])
+    assert ply_mesh.point_data.active_scalars_name == name
+
+
+def test_polygon_faces_never_exceed_the_point_count() -> None:
+    """Triangulating non-planar polygons yields fewer rows than the fan bound.
+
+    ``num_triangles`` counts ``count - 2`` per face, but the ear clipping in
+    ``extract_triangles`` emits fewer for polygons it cannot fan, which left the
+    tail of the buffer holding whatever the allocator had there.
+    """
+    from pyvista import examples
+
+    path = examples.download_shark(load=False)
+    points, indices, _normals, _uv, _color = pyvista_miniply.read(path)
+
+    assert indices.size
+    assert indices.min() >= 0
+    assert indices.max() < points.shape[0]
+
+    mesh = pyvista_miniply.read_as_mesh(path)
+    assert mesh.n_cells == indices.shape[0]

@@ -54,11 +54,18 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
         }
       }
       if (read_color) {
-        read_color = reader.find_color(indexes);
+        // find_color only looks for r/g/b, so check for alpha first
+        uint32_t colorIdxs[4];
+        bool with_alpha =
+            reader.find_properties(colorIdxs, 4, "r", "g", "b", "a") ||
+            reader.find_properties(colorIdxs, 4, "red", "green", "blue",
+                                   "alpha");
+        read_color = with_alpha || reader.find_color(colorIdxs);
         if (read_color) {
-          color = MakeNDArray<uint8_t, 2>({(int)numVerts, 3});
-          reader.extract_properties(indexes, 3, miniply::PLYPropertyType::UChar,
-                                    color.data());
+          const int ncomp = with_alpha ? 4 : 3;
+          color = MakeNDArray<uint8_t, 2>({(int)numVerts, ncomp});
+          reader.extract_properties(
+              colorIdxs, ncomp, miniply::PLYPropertyType::UChar, color.data());
         }
       }
       if (read_normals) {
@@ -76,16 +83,30 @@ nb::tuple LoadPLY(const std::string &filename, bool read_normals = true,
       if (polys && !gotVerts) {
         throw std::runtime_error("Need vertex positions to triangulate faces.");
       }
-      uint32_t numTriangles = reader.num_triangles(indexes[0]);
-      indices = MakeNDArray<int, 2>({(int)numTriangles, 3});
+      // num_triangles assumes a fan (count - 2 per face); the ear-clipping in
+      // extract_triangles emits fewer for degenerate polygons, so treat it as
+      // an upper bound, zero the buffer, and keep only the rows actually
+      // written.
+      uint32_t maxTriangles = reader.num_triangles(indexes[0]);
+      int *tri = AllocateArray<int>((size_t)maxTriangles * 3, true);
 
       if (polys) {
         reader.extract_triangles(indexes[0], pos_ptr, numVerts,
-                                 miniply::PLYPropertyType::Int, indices.data());
+                                 miniply::PLYPropertyType::Int, tri);
       } else {
         reader.extract_list_property(indexes[0], miniply::PLYPropertyType::Int,
-                                     indices.data());
+                                     tri);
       }
+
+      uint32_t numTriangles = maxTriangles;
+      while (numTriangles > 0) {
+        const int *row = tri + (size_t)(numTriangles - 1) * 3;
+        if (row[0] != 0 || row[1] != 0 || row[2] != 0) {
+          break;
+        }
+        numTriangles--;
+      }
+      indices = WrapNDarray<int, 2>(tri, {(int)numTriangles, 3});
       gotFaces = true;
     }
     if (gotVerts && gotFaces) {
